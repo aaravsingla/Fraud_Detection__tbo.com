@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Activity,
   Brain,
+  Cpu,
 } from "lucide-react";
 import { cn } from "./ui/utils";
 import { Badge } from "./ui/badge";
@@ -43,6 +44,7 @@ export function Sidebar({ reviewQueueCount = 0, activeAlertsCount = 0 }: Sidebar
     // ── NEW PAGES ──────────────────────────────────────────────
     { to: "/velocity-cliff", icon: Activity, label: "Velocity Cliff", badge: null, group: "advanced" },
     { to: "/behavioral-entropy", icon: Brain, label: "Behavioral Entropy", badge: null, group: "advanced" },
+    { to: "/digital-twin", icon: Cpu, label: "Digital Twin", badge: null, group: "advanced" },
   ];
 
   const mainItems = navItems.filter((n) => n.group === "main");

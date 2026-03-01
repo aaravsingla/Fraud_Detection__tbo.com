@@ -8,6 +8,7 @@ import { LearningLoop } from "./pages/LearningLoop";
 import { AlertsView } from "./pages/AlertsView";
 import { VelocityCliffPage } from "./pages/VelocityCliffPage";
 import { BehavioralEntropyPage } from "./pages/BehavioralEntropyPage";
+import { DigitalTwinPage } from "./pages/DigitalTwinPage";
 import { NotFound } from "./pages/NotFound";
 
 export const router = createBrowserRouter([
@@ -24,6 +25,8 @@ export const router = createBrowserRouter([
       // ── NEW ROUTES ─────────────────────────────────────────────
       { path: "velocity-cliff", Component: VelocityCliffPage },
       { path: "behavioral-entropy", Component: BehavioralEntropyPage },
+      // ── DIGITAL TWIN ───────────────────────────────────────────
+      { path: "digital-twin", Component: DigitalTwinPage },
       {
         path: "settings",
         element: (
