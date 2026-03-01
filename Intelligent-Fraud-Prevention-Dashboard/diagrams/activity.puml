@@ -1,0 +1,31 @@
+@startuml activity
+title Activity — Booking Risk Reasoning (SysML)
+
+start
+:Ingest booking + agency + session signals;
+:Normalize + validate signals;
+
+if (Missing critical signals?) then (yes)
+  :Increase uncertainty;
+  :Route to Human Review;
+  stop
+endif
+
+:Compute sub-scores
+(Fraud, Chargeback, Credit, Network);
+:Fuse sub-scores -> risk + confidence;
+:Generate explanation factors;
+:Apply policy guardrails;
+
+if (risk >= Reject threshold?) then (reject)
+  :Decision = REJECT;
+elseif (risk >= Review threshold OR confidence low?) then (review)
+  :Decision = REVIEW;
+else (approve)
+  :Decision = APPROVE;
+endif
+
+:Emit decision + explanation + credit action;
+:Persist decision trace (audit);
+stop
+@enduml

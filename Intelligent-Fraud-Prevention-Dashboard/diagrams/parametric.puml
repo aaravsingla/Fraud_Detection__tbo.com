@@ -1,0 +1,31 @@
+@startuml parametric
+title Parametric Diagram — Risk Fusion & Trust Update (conceptual)
+
+class "RiskFusion" <<constraint>> {
+  risk = clamp01(wf*fraud + wc*chargeback + wcr*credit + wn*network)
+}
+
+class "TrustUpdate" <<constraint>> {
+  trust_t = clamp01(trust_{t-1} + goodEvents - badEvents - riskPenalty)
+}
+
+class "ValueProperties" <<block>> {
+  fraud : 0..1
+  chargeback : 0..1
+  credit : 0..1
+  network : 0..1
+  risk : 0..1
+  trust_t : 0..1
+}
+
+ValueProperties --> RiskFusion
+RiskFusion --> ValueProperties : risk
+ValueProperties --> TrustUpdate
+TrustUpdate --> ValueProperties : trust_t
+
+note right
+This model is synthetic; weights can be tuned.
+The UI should expose confidence + uncertainty.
+end note
+
+@enduml

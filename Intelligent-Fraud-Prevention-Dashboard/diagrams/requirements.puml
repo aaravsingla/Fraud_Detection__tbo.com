@@ -1,0 +1,33 @@
+@startuml requirements
+title Requirement Diagram — Decision Logic Requirements
+
+class "REQ-1 Explainability" <<requirement>> {
+  text = "Every decision includes top factors + evidence + notes."
+}
+
+class "REQ-2 Multi-signal Fusion" <<requirement>> {
+  text = "Combine fraud, chargeback, credit and network signals."
+}
+
+class "REQ-3 Uncertainty Handling" <<requirement>> {
+  text = "Low-confidence cases route to human review (and are logged)."
+}
+
+class "REQ-4 Adaptivity" <<requirement>> {
+  text = "Credit exposure adjusts (expand/contract/pause) as behavior changes."
+}
+
+class "REQ-5 Synthetic Data Only" <<requirement>> {
+  text = "All signals/data are synthetic; no real customer data."
+}
+
+class "REQ-6 Auditability" <<requirement>> {
+  text = "Persist decision traces + overrides for later investigation."
+}
+
+"REQ-2 Multi-signal Fusion" ..> "REQ-1 Explainability" : supports
+"REQ-3 Uncertainty Handling" ..> "REQ-1 Explainability" : supports
+"REQ-6 Auditability" ..> "REQ-1 Explainability" : supports
+"REQ-4 Adaptivity" ..> "REQ-2 Multi-signal Fusion" : refines
+
+@enduml

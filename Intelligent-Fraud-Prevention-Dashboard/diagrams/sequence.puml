@@ -1,0 +1,23 @@
+@startuml sequence
+title Sequence Diagram — Score + Review Override
+
+autonomous system as "Risk System"
+actor Analyst
+participant "Frontend" as FE
+participant "Backend API" as API
+participant "RiskEngine" as RE
+participant "ReviewStore" as RS
+
+Analyst -> FE : Open booking
+FE -> API : POST /api/risk/score {signals}
+API -> RE : scoreBooking(signals)
+RE --> API : decision + risk + confidence + factors
+API --> FE : response
+
+Analyst -> FE : Override (approve/reject) + rationale
+FE -> API : POST /api/review/override
+API -> RS : storeOverride(caseId,label,rationale)
+RS --> API : ack
+API --> FE : saved
+
+@enduml

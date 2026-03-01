@@ -1,0 +1,40 @@
+@startuml package
+title Package Diagram — Frontend / Backend
+
+package "Frontend (Vite + React)" {
+  package "pages" {
+    class Dashboard
+    class AlertsView
+    class NetworkView
+    class TrustEvolution
+    class CreditSimulator
+    class LearningLoop
+  }
+  package "components" {
+    class ExplainabilityPanel
+    class NetworkGraph
+    class BookingCard
+    class AgentCard
+  }
+  package "services" {
+    class apiClient
+    class riskApi
+  }
+}
+
+package "Backend (Node API)" {
+  package "routes" {
+    class riskRoutes
+    class creditRoutes
+    class reviewRoutes
+  }
+  package "risk" {
+    class riskEngine
+    class policyEngine
+    class explainability
+  }
+}
+
+"services" ..> "Backend (Node API)" : HTTP JSON (/api/*)
+
+@enduml

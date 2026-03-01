@@ -1,0 +1,33 @@
+@startuml ibd
+title Internal Block Diagram (IBD) — RiskOrchestrator Composition
+
+rectangle "RiskOrchestrator <<block>>" as RO {
+  [SignalStore] as SS
+  [FraudAgent] as FA
+  [ChargebackAgent] as CA
+  [CreditAgent] as CRA
+  [NetworkAgent] as NA
+  [PolicyEngine] as PE
+  [ExplainabilityEngine] as EE
+  [HumanReviewQueue] as HRQ
+}
+
+SS --> FA : booking+agency+session
+SS --> CA : booking history
+SS --> CRA : exposure+utilization
+SS --> NA : device/ip graph
+
+FA --> RO : fraudScore+confidence
+CA --> RO : cbScore+confidence
+CRA --> RO : creditScore+confidence
+NA --> RO : networkScore+confidence
+
+RO --> EE : scores+signals
+EE --> RO : factors+notes
+
+RO --> PE : fusedScore+confidence
+PE --> RO : decision+guardrails
+
+RO --> HRQ : enqueue(review)
+
+@enduml

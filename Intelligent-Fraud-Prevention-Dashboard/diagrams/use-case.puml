@@ -1,0 +1,27 @@
+@startuml use_case
+title Use Case Diagram — Fraud/Chargeback/Credit Reasoning
+
+left to right direction
+actor "Fraud Analyst" as FA
+actor "Credit Manager" as CM
+
+usecase "Score Booking Risk" as UC1
+usecase "Explain Decision" as UC2
+usecase "Recommend Credit Action\n(expand/contract/pause)" as UC3
+usecase "Detect Rings\n(network graph)" as UC4
+usecase "Override Decision\n(with rationale)" as UC5
+usecase "Learn From Overrides" as UC6
+
+FA --> UC1
+FA --> UC2
+FA --> UC4
+FA --> UC5
+
+CM --> UC3
+CM --> UC2
+CM --> UC5
+
+UC1 .> UC2 : includes
+UC5 .> UC6 : triggers
+
+@enduml

@@ -1,0 +1,45 @@
+@startuml bdd
+title Block Definition Diagram (BDD) — Risk Reasoning Blocks
+
+class "RiskOrchestrator" <<block>> {
+  +scoreBooking(signals)
+  +recommendCreditAction(risk, trust)
+  +explain(decision)
+}
+
+class "SignalStore" <<block>> {
+  +getBookingSignals(bookingId)
+  +getAgencySignals(agencyId)
+  +getSessionSignals(sessionId)
+}
+
+class "FraudAgent" <<block>> { +score(signals) }
+class "ChargebackAgent" <<block>> { +score(signals) }
+class "CreditAgent" <<block>> { +score(signals) }
+class "NetworkAgent" <<block>> { +score(signals) }
+
+class "PolicyEngine" <<block>> {
+  +applyGuardrails(score, confidence)
+  +thresholds
+}
+
+class "ExplainabilityEngine" <<block>> {
+  +factorAttribution(signals, scores)
+  +notes
+}
+
+class "HumanReviewQueue" <<block>> {
+  +enqueue(case)
+  +recordOverride(caseId, label, rationale)
+}
+
+RiskOrchestrator *-- SignalStore
+RiskOrchestrator *-- FraudAgent
+RiskOrchestrator *-- ChargebackAgent
+RiskOrchestrator *-- CreditAgent
+RiskOrchestrator *-- NetworkAgent
+RiskOrchestrator *-- PolicyEngine
+RiskOrchestrator *-- ExplainabilityEngine
+RiskOrchestrator o-- HumanReviewQueue
+
+@enduml

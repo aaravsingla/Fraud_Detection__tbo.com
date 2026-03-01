@@ -1,0 +1,23 @@
+@startuml state_machine
+title State Machine — Booking Case Lifecycle
+
+[*] --> Ingested
+Ingested --> NeedsMoreData : missing signals
+Ingested --> Scored : signals available
+NeedsMoreData --> Scored : signals received
+
+Scored --> Approved : low risk & high confidence
+Scored --> Rejected : high risk
+Scored --> InReview : medium risk OR low confidence
+
+InReview --> Approved : analyst approve
+InReview --> Rejected : analyst reject
+InReview --> Escalated : manager required
+
+Escalated --> Approved
+Escalated --> Rejected
+
+Approved --> [*]
+Rejected --> [*]
+
+@enduml
