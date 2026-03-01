@@ -10,6 +10,7 @@ import { VelocityCliffPage } from "./pages/VelocityCliffPage";
 import { BehavioralEntropyPage } from "./pages/BehavioralEntropyPage";
 import { DigitalTwinPage } from "./pages/DigitalTwinPage";
 import { ActorCriticPage } from "./pages/ActorCriticPage";
+import { FraudChatPage } from "./pages/FraudChatPage";
 import { NotFound } from "./pages/NotFound";
 
 export const router = createBrowserRouter([
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
       // ── DIGITAL TWIN ───────────────────────────────────────────
       { path: "digital-twin", Component: DigitalTwinPage },
       { path: "actor-critic", Component: ActorCriticPage },
+      { path: "fraud-chat", Component: FraudChatPage },
       {
         path: "settings",
         element: (
