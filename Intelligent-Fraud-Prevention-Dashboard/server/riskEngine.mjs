@@ -1,3 +1,5 @@
+import { detectAgentDisagreement } from "./escalationEngine.mjs";
+
 export function scoreBooking(input) {
   const signals = input?.signals ?? {};
 
@@ -49,6 +51,32 @@ export function scoreBooking(input) {
     ringConnectivityRisk: 0.6 * norm(signals.ringConnectivityRisk),
   });
 
+  // ── Agent Disagreement Detection ──────────────────────────────────────────
+  const agentScores100 = [
+    { agentId: "fraud", agentName: "Fraud Agent", score: Math.round(fraud * 100) },
+    { agentId: "chargeback", agentName: "Chargeback Agent", score: Math.round(chargeback * 100) },
+    { agentId: "credit", agentName: "Credit Agent", score: Math.round(credit * 100) },
+    { agentId: "network", agentName: "Network Agent", score: Math.round(network * 100) },
+  ];
+  const disagreement = detectAgentDisagreement(agentScores100);
+
+  const notes = buildNotes({ fused, confidence, network });
+
+  let escalation = null;
+  if (disagreement.disagreementDetected) {
+    notes.push(
+      `Agent disagreement detected (spread: ${disagreement.maxSpread} pts between ${disagreement.agentA?.agentName} and ${disagreement.agentB?.agentName}) — escalated for senior review.`
+    );
+    if (decision === "REVIEW" || decision === "REJECT") {
+      escalation = {
+        required: true,
+        reason: "agent_disagreement",
+        maxSpread: disagreement.maxSpread,
+        disagreeingPair: [disagreement.agentA?.agentId, disagreement.agentB?.agentId],
+      };
+    }
+  }
+
   return {
     decision,
     riskScore: Math.round(fused * 100),
@@ -61,12 +89,13 @@ export function scoreBooking(input) {
     },
     explainability: {
       topFactors: factors,
-      notes: buildNotes({ fused, confidence, network }),
+      notes,
       signalCoverage: {
         present: countPresent(signals),
         total: countTotal(signals),
       },
     },
+    ...(escalation ? { escalation } : {}),
   };
 }
 

@@ -41,3 +41,8 @@ coverage/
 *.png
 *.svg
 *.pdf
+
+# Pdf files for problem statement
+
+Fraud_Detection_ppt_TBO.pdf
+TBO_Detailed_Submission_Fraud_Detection.pdf

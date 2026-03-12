@@ -1,9 +1,43 @@
 // Core type definitions for the fraud prevention system
 
 export type RiskLevel = "low" | "medium" | "high" | "critical";
-export type BookingStatus = "pending" | "approved" | "rejected" | "reviewing";
+export type BookingStatus = "pending" | "approved" | "rejected" | "reviewing" | "escalated" | "awaiting_verification";
 export type AgentStatus = "idle" | "analyzing" | "complete";
 export type AlertSeverity = "info" | "warning" | "critical";
+
+// ── Escalation types ────────────────────────────────────────────────────────
+export type EscalationReason = "agent_disagreement" | "low_confidence" | "manual" | "identity_risk";
+export type EscalationStatus = "pending" | "assigned" | "resolved";
+
+export interface Escalation {
+  id: string;
+  bookingId: string;
+  reason: EscalationReason;
+  agentScores: { agentId: string; agentName: string; score: number }[];
+  maxSpread: number;
+  assignedTo?: string;
+  status: EscalationStatus;
+  createdAt: Date;
+  resolvedAt?: Date;
+  resolution?: string;
+}
+
+// ── Step-up verification types ──────────────────────────────────────────────
+export type VerificationMethod = "email_otp" | "ivr_call";
+export type VerificationStatus = "pending" | "sent" | "verified" | "failed" | "expired";
+
+export interface StepUpVerification {
+  id: string;
+  bookingId: string;
+  method: VerificationMethod;
+  target: string;
+  status: VerificationStatus;
+  requestedBy: string;
+  requestedAt: Date;
+  verifiedAt?: Date;
+  attempts: number;
+  maxAttempts: number;
+}
 
 export interface Booking {
   id: string;
@@ -18,6 +52,8 @@ export interface Booking {
   riskFactors: RiskFactor[];
   deviceId?: string;
   ipAddress?: string;
+  escalation?: Escalation;
+  verification?: StepUpVerification;
 }
 
 export interface AgentAssessment {
@@ -62,6 +98,8 @@ export interface Alert {
   timestamp: Date;
   relatedBookingId?: string;
   actionRequired: boolean;
+  escalationId?: string;
+  verificationType?: VerificationMethod;
 }
 
 export interface KPI {

@@ -15,6 +15,7 @@ export type RiskDecision = {
     notes: string[];
     signalCoverage?: { present: number; total: number };
   };
+  escalation?: RiskEscalationFlag;
 };
 
 export type CreditRecommendation = {
@@ -96,6 +97,67 @@ export type AgencyRiskProfile = {
   dualState: DualStateResult;
   entropy: BehavioralEntropyResult;
   gapAnalysis: BookingGapResult;
+};
+
+// ── Escalation Types ──────────────────────────────────────────────────────────
+
+export type EscalationResponse = {
+  ok: boolean;
+  escalation: {
+    id: string;
+    bookingId: string | null;
+    reason: string;
+    agentScores: { agentId: string; agentName: string; score: number }[];
+    maxSpread: number;
+    assignedTo: string | null;
+    status: "pending" | "assigned" | "resolved";
+    createdAt: string;
+    resolvedAt: string | null;
+    resolution: string | null;
+  };
+};
+
+export type EscalationListResponse = {
+  ok: boolean;
+  escalations: EscalationResponse["escalation"][];
+};
+
+// ── Verification Types ────────────────────────────────────────────────────────
+
+export type VerificationRequestResponse = {
+  verificationId: string;
+  status: string;
+  expiresAt?: string;
+  twilioCallId?: string;
+  _devOtp?: string;
+};
+
+export type VerifyResult = {
+  verified: boolean;
+  error?: string;
+  attemptsRemaining: number;
+};
+
+export type VerificationStatusResponse = {
+  verificationId: string;
+  bookingId: string | null;
+  method: "email_otp" | "ivr_call";
+  target: string;
+  status: "pending" | "sent" | "verified" | "failed" | "expired";
+  attempts: number;
+  maxAttempts: number;
+  requestedAt: string;
+  expiresAt: string;
+  verifiedAt: string | null;
+};
+
+// ── Escalation in Risk Decision ───────────────────────────────────────────────
+
+export type RiskEscalationFlag = {
+  required: boolean;
+  reason: string;
+  maxSpread: number;
+  disagreeingPair: string[];
 };
 
 // ── EXISTING API CALLS ────────────────────────────────────────────────────────
@@ -180,4 +242,52 @@ export function fetchAgencyRiskProfile(input: {
   gaps: { gapDistribution: number[]; lastMinuteCancellationRate: number };
 }) {
   return postJson<AgencyRiskProfile>("/api/agency/risk-profile", input);
+}
+
+// ── Escalation API ────────────────────────────────────────────────────────────
+
+export function createEscalation(input: {
+  bookingId: string;
+  reason: string;
+  agentScores: { agentId: string; agentName?: string; score: number }[];
+}) {
+  return postJson<EscalationResponse>("/api/escalation/create", input);
+}
+
+export function fetchEscalations(status?: string) {
+  const qs = status ? `?status=${encodeURIComponent(status)}` : "";
+  return getJson<EscalationListResponse>(`/api/escalation/list${qs}`);
+}
+
+export function resolveEscalationApi(input: {
+  escalationId: string;
+  resolution: string;
+  resolvedBy: string;
+}) {
+  return postJson<EscalationResponse>("/api/escalation/resolve", input);
+}
+
+export function assignEscalationApi(input: {
+  escalationId: string;
+  assignedTo: string;
+}) {
+  return postJson<EscalationResponse>("/api/escalation/assign", input);
+}
+
+// ── Verification API ──────────────────────────────────────────────────────────
+
+export function requestEmailOTP(input: { bookingId: string; email: string }) {
+  return postJson<VerificationRequestResponse>("/api/verification/request-otp", input);
+}
+
+export function requestIVRCall(input: { bookingId: string; phone: string }) {
+  return postJson<VerificationRequestResponse>("/api/verification/request-ivr", input);
+}
+
+export function verifyCode(input: { verificationId: string; code: string }) {
+  return postJson<VerifyResult>("/api/verification/verify", input);
+}
+
+export function fetchVerificationStatus(verificationId: string) {
+  return getJson<VerificationStatusResponse>(`/api/verification/status/${encodeURIComponent(verificationId)}`);
 }

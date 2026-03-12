@@ -12,6 +12,7 @@ import {
   Cpu,
   Layers,
   MessageSquare,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "./ui/utils";
 import { Badge } from "./ui/badge";
@@ -19,9 +20,10 @@ import { Badge } from "./ui/badge";
 interface SidebarProps {
   reviewQueueCount?: number;
   activeAlertsCount?: number;
+  escalationCount?: number;
 }
 
-export function Sidebar({ reviewQueueCount = 0, activeAlertsCount = 0 }: SidebarProps) {
+export function Sidebar({ reviewQueueCount = 0, activeAlertsCount = 0, escalationCount = 0 }: SidebarProps) {
   const location = useLocation();
 
   const navItems = [
@@ -41,6 +43,13 @@ export function Sidebar({ reviewQueueCount = 0, activeAlertsCount = 0 }: Sidebar
       icon: AlertCircle,
       label: "Alerts & Actions",
       badge: activeAlertsCount > 0 ? activeAlertsCount : null,
+      group: "main",
+    },
+    {
+      to: "/escalations",
+      icon: ShieldAlert,
+      label: "Escalation Queue",
+      badge: escalationCount > 0 ? escalationCount : null,
       group: "main",
     },
     // ── NEW PAGES ──────────────────────────────────────────────

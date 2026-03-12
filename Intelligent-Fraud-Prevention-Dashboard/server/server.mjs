@@ -8,6 +8,23 @@ import {
   computeBehavioralEntropy,
   analyzeBookingGaps,
 } from "./advancedEngine.mjs";
+import {
+  createEscalation,
+  listEscalations,
+  resolveEscalation,
+  assignEscalation,
+} from "./escalationEngine.mjs";
+import {
+  requestEmailOTP,
+  requestIVRCall,
+  verifyCode,
+  getVerificationStatus,
+} from "./verificationEngine.mjs";
+import {
+  buildGatherTwiml,
+  buildSuccessTwiml,
+  buildFailureTwiml,
+} from "./twilio-ivr.mjs";
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5179;
 
@@ -34,6 +51,32 @@ function readJson(req) {
       catch (e) { reject(e); }
     });
   });
+}
+
+function readFormBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = "";
+    req.on("data", (chunk) => {
+      data += chunk;
+      if (data.length > 1_000_000) req.destroy();
+    });
+    req.on("end", () => {
+      try {
+        const params = new URLSearchParams(data);
+        const obj = {};
+        for (const [k, v] of params) obj[k] = v;
+        resolve(obj);
+      } catch (e) { reject(e); }
+    });
+  });
+}
+
+function sendTwiml(res, twiml) {
+  res.writeHead(200, {
+    "content-type": "application/xml",
+    "cache-control": "no-cache",
+  });
+  res.end(twiml);
 }
 
 const server = http.createServer(async (req, res) => {
@@ -130,6 +173,112 @@ const server = http.createServer(async (req, res) => {
         entropy,
         gapAnalysis,
       });
+    }
+
+    // ── Escalation Endpoints ──────────────────────────────────────────────────
+    if (req.url === "/api/escalation/create" && req.method === "POST") {
+      const input = await readJson(req);
+      const esc = createEscalation({
+        bookingId: input?.bookingId ?? null,
+        reason: input?.reason ?? "manual",
+        agentScores: input?.agentScores ?? [],
+      });
+      return send(res, 200, { ok: true, escalation: esc });
+    }
+
+    if (req.url?.startsWith("/api/escalation/list") && req.method === "GET") {
+      const url = new URL(req.url, `http://localhost:${PORT}`);
+      const status = url.searchParams.get("status") || undefined;
+      const limit = Number(url.searchParams.get("limit")) || 50;
+      return send(res, 200, { ok: true, escalations: listEscalations({ status, limit }) });
+    }
+
+    if (req.url === "/api/escalation/resolve" && req.method === "POST") {
+      const input = await readJson(req);
+      const esc = resolveEscalation({
+        escalationId: input?.escalationId,
+        resolution: input?.resolution,
+        resolvedBy: input?.resolvedBy,
+      });
+      if (!esc) return send(res, 404, { error: "Escalation not found" });
+      return send(res, 200, { ok: true, escalation: esc });
+    }
+
+    if (req.url === "/api/escalation/assign" && req.method === "POST") {
+      const input = await readJson(req);
+      const esc = assignEscalation({
+        escalationId: input?.escalationId,
+        assignedTo: input?.assignedTo,
+      });
+      if (!esc) return send(res, 404, { error: "Escalation not found" });
+      return send(res, 200, { ok: true, escalation: esc });
+    }
+
+    // ── Verification Endpoints ────────────────────────────────────────────────
+    if (req.url === "/api/verification/request-otp" && req.method === "POST") {
+      const input = await readJson(req);
+      const result = await requestEmailOTP({
+        bookingId: input?.bookingId,
+        email: input?.email,
+      });
+      if (result.error) return send(res, 400, result);
+      return send(res, 200, result);
+    }
+
+    if (req.url === "/api/verification/request-ivr" && req.method === "POST") {
+      const input = await readJson(req);
+      const result = requestIVRCall({
+        bookingId: input?.bookingId,
+        phone: input?.phone,
+      });
+      if (result.error) return send(res, 400, result);
+      return send(res, 200, result);
+    }
+
+    if (req.url === "/api/verification/verify" && req.method === "POST") {
+      const input = await readJson(req);
+      const result = verifyCode({
+        verificationId: input?.verificationId,
+        code: input?.code,
+      });
+      return send(res, 200, result);
+    }
+
+    if (req.url?.startsWith("/api/verification/status/") && req.method === "GET") {
+      const id = req.url.split("/api/verification/status/")[1]?.split("?")[0];
+      const result = getVerificationStatus(id);
+      if (!result) return send(res, 404, { error: "Verification not found" });
+      return send(res, 200, result);
+    }
+
+    // ── Twilio Webhook Endpoints ────────────────────────────────────────────
+    // GET|POST /api/twilio/voice?vid=<verificationId> — returns TwiML to play prompt + gather DTMF
+    if (req.url?.startsWith("/api/twilio/voice") && (req.method === "GET" || req.method === "POST")) {
+      const url = new URL(req.url, `http://localhost:${PORT}`);
+      const vid = url.searchParams.get("vid");
+      if (!vid) return send(res, 400, { error: "Missing vid parameter" });
+      return sendTwiml(res, buildGatherTwiml(vid));
+    }
+
+    // POST /api/twilio/gather?vid=<verificationId> — receives gathered DTMF digits from Twilio
+    if (req.url?.startsWith("/api/twilio/gather") && req.method === "POST") {
+      const url = new URL(req.url, `http://localhost:${PORT}`);
+      const vid = url.searchParams.get("vid");
+      if (!vid) return send(res, 400, { error: "Missing vid parameter" });
+
+      const body = await readFormBody(req);
+      const digits = body.Digits ?? "";
+
+      console.log(`[TWILIO-WEBHOOK] Gather received: vid=${vid} digits=${digits}`);
+
+      if (digits === "1") {
+        // User confirmed they requested this call — mark verified
+        const result = verifyCode({ verificationId: vid, code: "__PRESS1__" });
+        return sendTwiml(res, buildSuccessTwiml());
+      } else {
+        // User denied — mark failed
+        return sendTwiml(res, buildFailureTwiml(vid, 0));
+      }
     }
 
     return send(res, 404, { error: "Not Found" });

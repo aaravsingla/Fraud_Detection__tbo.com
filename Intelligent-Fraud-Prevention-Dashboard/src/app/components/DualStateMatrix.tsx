@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ShieldCheck, CreditCard, UserX, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react";
 import { cn } from "./ui/utils";
 import { computeDualState, type DualStateResult } from "../services/riskApi";
+import { Button } from "./ui/button";
 
 interface DualStateMatrixProps {
   creditHealth: number;
@@ -10,6 +11,7 @@ interface DualStateMatrixProps {
   agencyName?: string;
   additionalSignals?: Record<string, number>;
   compact?: boolean;
+  onVerifyNow?: () => void;
 }
 
 const QUADRANT_CONFIG = {
@@ -66,7 +68,7 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
   PAUSE_EXPOSURE: { label: "✗ Pause Exposure", color: "#C62828" },
 };
 
-export function DualStateMatrix({ creditHealth, identityIntegrity, agencyName, additionalSignals, compact = false }: DualStateMatrixProps) {
+export function DualStateMatrix({ creditHealth, identityIntegrity, agencyName, additionalSignals, compact = false, onVerifyNow }: DualStateMatrixProps) {
   const [result, setResult] = useState<DualStateResult | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -214,6 +216,12 @@ export function DualStateMatrix({ creditHealth, identityIntegrity, agencyName, a
               </span>
             </div>
             <p className="text-xs text-gray-600 leading-relaxed">{result.reasoning}</p>
+            {(quadrant === "IDENTITY_RISK" || quadrant === "DUAL_RISK") && onVerifyNow && (
+              <Button size="sm" className="mt-2 h-7 text-xs" onClick={onVerifyNow}>
+                <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+                Verify Now
+              </Button>
+            )}
           </motion.div>
         </AnimatePresence>
       )}

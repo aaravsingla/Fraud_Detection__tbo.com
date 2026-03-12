@@ -1,4 +1,4 @@
-import { Clock, TrendingUp, CheckCircle, XCircle, Eye } from "lucide-react";
+import { Clock, TrendingUp, CheckCircle, XCircle, Eye, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Booking } from "../types";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -35,6 +35,10 @@ export function BookingCard({ booking, onViewDetails }: BookingCardProps) {
         return "bg-[#C62828] text-white";
       case "reviewing":
         return "bg-[#F57C00] text-white";
+      case "escalated":
+        return "bg-amber-500 text-white";
+      case "awaiting_verification":
+        return "bg-blue-500 text-white";
       default:
         return "bg-gray-500 text-white";
     }
@@ -48,6 +52,10 @@ export function BookingCard({ booking, onViewDetails }: BookingCardProps) {
         return <XCircle className="w-3 h-3" />;
       case "reviewing":
         return <Eye className="w-3 h-3" />;
+      case "escalated":
+        return <ShieldAlert className="w-3 h-3" />;
+      case "awaiting_verification":
+        return <ShieldCheck className="w-3 h-3" />;
       default:
         return <Clock className="w-3 h-3" />;
     }
@@ -135,6 +143,24 @@ export function BookingCard({ booking, onViewDetails }: BookingCardProps) {
           )}
         />
       </div>
+
+      {/* Escalation / Verification badges */}
+      {(booking.escalation || booking.verification) && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {booking.escalation && (
+            <Badge variant="outline" className="text-[10px] border-amber-300 text-amber-700 bg-amber-50">
+              <ShieldAlert className="w-3 h-3 mr-0.5" />
+              Escalated — Δ{booking.escalation.maxSpread}pts
+            </Badge>
+          )}
+          {booking.verification && (
+            <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-700 bg-blue-50">
+              <ShieldCheck className="w-3 h-3 mr-0.5" />
+              {booking.verification.method === "email_otp" ? "Email OTP" : "IVR"} — {booking.verification.status}
+            </Badge>
+          )}
+        </div>
+      )}
 
       {/* Agent Consensus Preview */}
       <div className="flex items-center gap-2 mb-3">

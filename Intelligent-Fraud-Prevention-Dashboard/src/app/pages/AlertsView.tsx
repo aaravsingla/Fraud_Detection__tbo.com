@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { mockAlerts } from "../data/mockData";
-import { AlertCircle, CheckCircle, Info, Clock, ExternalLink } from "lucide-react";
+import { AlertCircle, CheckCircle, Info, Clock, ExternalLink, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { motion } from "motion/react";
-import { Alert } from "../types";
+import { useNavigate } from "react-router";
 
 export function AlertsView() {
   const [alerts, setAlerts] = useState(mockAlerts);
   const [filter, setFilter] = useState<"all" | "critical" | "warning" | "info">("all");
+  const navigate = useNavigate();
 
   const filteredAlerts = alerts.filter((alert) => {
     if (filter === "all") return true;
@@ -183,7 +184,29 @@ export function AlertsView() {
                   </div>
 
                   <div className="flex gap-2">
-                    {alert.actionRequired && (
+                    {alert.escalationId && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-amber-700 border-amber-300"
+                        onClick={() => navigate("/escalations")}
+                      >
+                        <ShieldAlert className="w-3.5 h-3.5 mr-1" />
+                        View Escalation
+                      </Button>
+                    )}
+                    {alert.verificationType && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-blue-700 border-blue-300"
+                        onClick={() => navigate("/")}
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+                        Verify Identity
+                      </Button>
+                    )}
+                    {alert.actionRequired && !alert.escalationId && !alert.verificationType && (
                       <>
                         <Button size="sm" variant="outline">
                           Investigate

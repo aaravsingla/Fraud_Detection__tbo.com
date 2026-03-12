@@ -1,4 +1,4 @@
-import { Booking, NetworkNode, TrustScoreDataPoint, Alert, KPI } from "../types";
+import { Booking, NetworkNode, TrustScoreDataPoint, Alert, KPI, Escalation, StepUpVerification } from "../types";
 
 // Mock bookings data demonstrating various scenarios
 export const mockBookings: Booking[] = [
@@ -28,7 +28,7 @@ export const mockBookings: Booking[] = [
         agentId: "AG-BEH-01",
         agentName: "Behavioral Monitor",
         agentType: "behavioral",
-        riskScore: 78,
+        riskScore: 72,
         confidence: 82,
         reasoning: "Booking time unusual (2 AM local time). Geographic pattern deviation.",
         status: "complete",
@@ -86,7 +86,21 @@ export const mockBookings: Booking[] = [
         value: "+45%",
         description: "Above market pricing standards"
       }
-    ]
+    ],
+    escalation: {
+      id: "ESC-0001",
+      bookingId: "BK-2026-001",
+      reason: "agent_disagreement",
+      agentScores: [
+        { agentId: "AG-FIN-01", agentName: "Financial Analyzer", score: 92 },
+        { agentId: "AG-BEH-01", agentName: "Behavioral Monitor", score: 72 },
+        { agentId: "AG-NET-01", agentName: "Network Detector", score: 95 },
+        { agentId: "AG-BEN-01", agentName: "Benchmark Comparator", score: 85 },
+      ],
+      maxSpread: 23,
+      status: "pending",
+      createdAt: new Date("2026-02-06T14:24:00"),
+    },
   },
   {
     id: "BK-2026-002",
@@ -234,7 +248,18 @@ export const mockBookings: Booking[] = [
         value: "+45%",
         description: "Transaction frequency has increased"
       }
-    ]
+    ],
+    verification: {
+      id: "VER-0001",
+      bookingId: "BK-2026-003",
+      method: "email_otp",
+      target: "ops@skyhigh-agencies.com",
+      status: "pending",
+      requestedBy: "system",
+      requestedAt: new Date("2026-02-06T14:16:00"),
+      attempts: 0,
+      maxAttempts: 3,
+    },
   },
   {
     id: "BK-2026-004",
@@ -458,6 +483,26 @@ export const mockAlerts: Alert[] = [
     severity: "info",
     timestamp: new Date("2026-02-06T14:00:00"),
     actionRequired: false
+  },
+  {
+    id: "ALT-005",
+    title: "Agent Disagreement — BK-2026-001",
+    description: "Network Detector (95%) and Behavioral Monitor (72%) disagree by 23 points. Escalated for senior review.",
+    severity: "warning",
+    timestamp: new Date("2026-02-06T14:24:00"),
+    relatedBookingId: "BK-2026-001",
+    actionRequired: true,
+    escalationId: "ESC-0001",
+  },
+  {
+    id: "ALT-006",
+    title: "Step-Up Verification Required — BK-2026-003",
+    description: "Identity risk detected for SkyHigh Agencies. Email OTP verification requested.",
+    severity: "warning",
+    timestamp: new Date("2026-02-06T14:16:00"),
+    relatedBookingId: "BK-2026-003",
+    actionRequired: true,
+    verificationType: "email_otp",
   }
 ];
 
@@ -487,4 +532,50 @@ export const mockKPIs: KPI[] = [
     trend: 2.1,
     icon: "target"
   }
+];
+
+export const mockEscalations: Escalation[] = [
+  {
+    id: "ESC-0001",
+    bookingId: "BK-2026-001",
+    reason: "agent_disagreement",
+    agentScores: [
+      { agentId: "AG-FIN-01", agentName: "Financial Analyzer", score: 92 },
+      { agentId: "AG-BEH-01", agentName: "Behavioral Monitor", score: 72 },
+      { agentId: "AG-NET-01", agentName: "Network Detector", score: 95 },
+      { agentId: "AG-BEN-01", agentName: "Benchmark Comparator", score: 85 },
+    ],
+    maxSpread: 23,
+    status: "pending",
+    createdAt: new Date("2026-02-06T14:24:00"),
+  },
+  {
+    id: "ESC-0002",
+    bookingId: "BK-2026-005",
+    reason: "confidence_conflict",
+    agentScores: [
+      { agentId: "AG-FIN-01", agentName: "Financial Analyzer", score: 60 },
+      { agentId: "AG-BEH-01", agentName: "Behavioral Monitor", score: 44 },
+      { agentId: "AG-NET-01", agentName: "Network Detector", score: 68 },
+      { agentId: "AG-BEN-01", agentName: "Benchmark Comparator", score: 50 },
+    ],
+    maxSpread: 24,
+    status: "assigned",
+    assignedTo: "Ritu Sharma",
+    createdAt: new Date("2026-02-06T10:15:00"),
+  },
+];
+
+export const mockVerifications: StepUpVerification[] = [
+  {
+    id: "VER-0001",
+    bookingId: "BK-2026-003",
+    method: "email_otp",
+    target: "ops@skyhigh-agencies.com",
+    status: "pending",
+    requestedBy: "system",
+    requestedAt: new Date("2026-02-06T14:16:00"),
+    attempts: 0,
+    maxAttempts: 3,
+  },
 ];

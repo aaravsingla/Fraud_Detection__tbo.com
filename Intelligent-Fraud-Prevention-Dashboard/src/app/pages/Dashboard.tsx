@@ -1,17 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { BookingCard } from "../components/BookingCard";
 import { AgentCard } from "../components/AgentCard";
 import { ExplainabilityPanel } from "../components/ExplainabilityPanel";
 import { DualStateMatrix } from "../components/DualStateMatrix";
+import { AgentDisagreementBanner } from "../components/AgentDisagreementBanner";
+import { StepUpVerificationModal } from "../components/StepUpVerificationModal";
 import { mockBookings } from "../data/mockData";
 import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Badge } from "../components/ui/badge";
-import { Filter, RefreshCw } from "lucide-react";
+import { Filter, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { motion } from "motion/react";
 import type { RiskFactor } from "../types";
-import { scoreBookingRisk, type RiskDecision } from "../services/riskApi";
+import { scoreBookingRisk, createEscalation, type RiskDecision } from "../services/riskApi";
 import { signalsFromBooking } from "../services/signalAdapters";
+import { toast } from "sonner";
 
 // Derive dual-state values from a booking's mock data
 function getDualStateFromBooking(bookingId: string) {
@@ -29,6 +32,8 @@ export function Dashboard() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [apiDecision, setApiDecision] = useState<RiskDecision | null>(null);
   const [apiLoading, setApiLoading] = useState(false);
+  const [escalatedBookings, setEscalatedBookings] = useState<Set<string>>(new Set());
+  const [verifyModalOpen, setVerifyModalOpen] = useState(false);
 
   const selectedBooking = selectedBookingId
     ? mockBookings.find((b) => b.id === selectedBookingId)
@@ -75,7 +80,49 @@ export function Dashboard() {
   const displayedDecision = apiDecision?.decision ?? null;
   const displayedConfidence = apiDecision?.confidence ?? consensusConfidence;
 
-  const dualStateProfile = selectedBookingId ? getDualStateFromBooking(selectedBookingId) : null;
+  const [identityVerifiedBookings, setIdentityVerifiedBookings] = useState<Set<string>>(new Set());
+  const baseDualState = selectedBookingId ? getDualStateFromBooking(selectedBookingId) : null;
+  const dualStateProfile = baseDualState && selectedBookingId && identityVerifiedBookings.has(selectedBookingId)
+    ? { ...baseDualState, identityIntegrity: Math.max(baseDualState.identityIntegrity, 90) }
+    : baseDualState;
+
+  // Compute pairwise max agent spread for the selected booking
+  const agentSpread = useMemo(() => {
+    if (!selectedBooking) return 0;
+    const scores = selectedBooking.agentAssessments.map((a) => a.riskScore);
+    let max = 0;
+    for (let i = 0; i < scores.length; i++)
+      for (let j = i + 1; j < scores.length; j++)
+        max = Math.max(max, Math.abs(scores[i] - scores[j]));
+    return max;
+  }, [selectedBooking]);
+
+  const handleEscalate = useCallback(async () => {
+    if (!selectedBooking) return;
+    try {
+      await createEscalation(
+        selectedBooking.id,
+        "agent_disagreement",
+        selectedBooking.agentAssessments.map((a) => ({
+          agentId: a.agentId,
+          agentName: a.agentName,
+          score: a.riskScore,
+        }))
+      );
+      setEscalatedBookings((prev) => new Set(prev).add(selectedBooking.id));
+      toast.success("Escalated to manager queue");
+    } catch {
+      toast.error("Escalation failed");
+    }
+  }, [selectedBooking]);
+
+  const handleVerified = useCallback(() => {
+    toast.success("Identity verified successfully");
+    if (selectedBookingId) {
+      setIdentityVerifiedBookings((prev) => new Set(prev).add(selectedBookingId));
+    }
+    setVerifyModalOpen(false);
+  }, [selectedBookingId]);
 
   const filteredBookings = mockBookings.filter((booking) => {
     if (filterStatus === "all") return true;
@@ -136,6 +183,7 @@ export function Dashboard() {
                   identityIntegrity={dualStateProfile.identityIntegrity}
                   agencyName={selectedBooking.agencyName}
                   additionalSignals={dualStateProfile.additionalSignals}
+                  onVerifyNow={() => setVerifyModalOpen(true)}
                 />
               )}
 
@@ -156,6 +204,16 @@ export function Dashboard() {
                     <AgentCard key={agent.agentId} agent={agent} index={index} />
                   ))}
                 </div>
+
+                {/* Agent Disagreement Banner */}
+                {agentSpread > 20 && (
+                  <AgentDisagreementBanner
+                    agents={selectedBooking.agentAssessments}
+                    bookingId={selectedBooking.id}
+                    onEscalate={handleEscalate}
+                    isEscalated={escalatedBookings.has(selectedBooking.id) || !!selectedBooking.escalation}
+                  />
+                )}
               </div>
 
               {/* Explainability */}
@@ -185,11 +243,23 @@ export function Dashboard() {
                   </div>
                   <div className="flex gap-2 mt-3">
                     <Button className="flex-1 bg-[#2E7D32] hover:bg-[#2E7D32]/90">Approve</Button>
-                    <Button className="flex-1" variant="outline">Request More Info</Button>
+                    <Button className="flex-1" variant="outline" onClick={() => setVerifyModalOpen(true)}>
+                      <ShieldCheck className="w-4 h-4 mr-1" />
+                      Request Verification
+                    </Button>
                     <Button className="flex-1 bg-[#C62828] hover:bg-[#C62828]/90" variant="destructive">Reject</Button>
                   </div>
                 </div>
               </motion.div>
+
+              {/* Step-Up Verification Modal */}
+              <StepUpVerificationModal
+                open={verifyModalOpen}
+                onOpenChange={setVerifyModalOpen}
+                bookingId={selectedBooking.id}
+                defaultEmail={selectedBooking.agencyName.toLowerCase().replaceAll(/\s+/g, "") + "@agency.com"}
+                onVerified={handleVerified}
+              />
             </>
           ) : (
             <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border border-dashed min-h-[400px]">
