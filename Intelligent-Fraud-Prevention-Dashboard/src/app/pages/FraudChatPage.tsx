@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 import { motion, AnimatePresence } from "motion/react";
 
 // ── CONFIG — paste your Gemini API key here ──────────────────────────────────────
-const GEMINI_API_KEY = "-" ;
+const GEMINI_API_KEY = "AIzaSyA0rOwbr2pP7KTAkCD4aby3W3MmeCV8m-k" ;
 const GEMINI_MODEL = "gemini-2.5-flash-lite";
 
 // ── System prompt ────────────────────────────────────────────────────────────────
@@ -195,7 +195,7 @@ export function FraudChatPage() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
-  const hasApiKey = GEMINI_API_KEY !== "-";
+  const hasApiKey = GEMINI_API_KEY !== "AIzaSyA0rOwbr2pP7KTAkCD4aby3W3MmeCV8m-k";
 
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)] max-w-4xl mx-auto p-4 gap-4">
