@@ -13,6 +13,7 @@ import { ActorCriticPage } from "./pages/ActorCriticPage";
 import { FraudChatPage } from "./pages/FraudChatPage";
 import { EscalationQueue } from "./pages/EscalationQueue";
 import { NotFound } from "./pages/NotFound";
+import CreditCardIntelligencePage from "./pages/CreditCardIntelligencePage";
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,8 @@ export const router = createBrowserRouter([
       { path: "actor-critic", Component: ActorCriticPage },
       { path: "fraud-chat", Component: FraudChatPage },
       { path: "escalations", Component: EscalationQueue },
+      // ── CREDIT CARD INTELLIGENCE ────────────────────────────────
+      { path: "credit-card-intelligence", Component: CreditCardIntelligencePage },
       {
         path: "settings",
         element: (

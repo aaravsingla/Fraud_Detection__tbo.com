@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { mockTrustScoreData, mockBookings } from "../data/mockData";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart } from "recharts";
-import { TrendingDown, Calendar, AlertCircle } from "lucide-react";
+import { TrendingDown, TrendingUp, Calendar, AlertCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
@@ -16,7 +16,28 @@ export function TrustEvolution() {
     { id: "AG-004", name: "Paradise Tours" },
   ];
 
-  const chartData = mockTrustScoreData.map((point) => ({
+  // Generate different trajectories based on the selected agency
+  const currentAgencyData = useMemo(() => {
+    if (selectedAgency === "AG-001") return mockTrustScoreData; // Original bust-out data
+    
+    return mockTrustScoreData.map((point, index) => {
+      let newScore = point.score;
+      let newEvent = undefined;
+
+      if (selectedAgency === "AG-002") { // Global Ventures - Stable & High
+        newScore = 90 + (index % 4);
+      } else if (selectedAgency === "AG-003") { // SkyHigh - Medium risk, slight drop
+        newScore = 75 - (index % 3) * 2;
+        if (index === 8) newEvent = "Destination anomaly detected";
+      } else if (selectedAgency === "AG-004") { // Paradise Tours - Perfect trust
+        newScore = 95 + (index % 3);
+      }
+
+      return { ...point, score: newScore, event: newEvent };
+    });
+  }, [selectedAgency]);
+
+  const chartData = currentAgencyData.map((point) => ({
     date: point.date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
     score: point.score,
     event: point.event,
@@ -62,7 +83,9 @@ export function TrustEvolution() {
             <CardTitle className="text-sm">Current Trust Score</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-[#C62828]">{currentScore}</div>
+            <div className={`text-3xl font-bold ${currentScore < 50 ? "text-[#C62828]" : currentScore < 75 ? "text-[#F57C00]" : "text-[#2E7D32]"}`}>
+              {currentScore}
+            </div>
             <p className="text-xs text-gray-500 mt-1">Out of 100</p>
           </CardContent>
         </Card>
@@ -73,10 +96,16 @@ export function TrustEvolution() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <TrendingDown className="w-5 h-5 text-[#C62828]" />
-              <div className="text-3xl font-bold text-[#C62828]">{change}</div>
+              {change < 0 ? (
+                <TrendingDown className="w-5 h-5 text-[#C62828]" />
+              ) : (
+                <TrendingUp className="w-5 h-5 text-[#2E7D32]" />
+              )}
+              <div className={`text-3xl font-bold ${change < 0 ? "text-[#C62828]" : "text-[#2E7D32]"}`}>
+                {change > 0 ? "+" : ""}{change}
+              </div>
             </div>
-            <p className="text-xs text-gray-500 mt-1">{changePercent}% decline</p>
+            <p className="text-xs text-gray-500 mt-1">{Math.abs(parseFloat(changePercent))}% {change < 0 ? "decline" : "increase"}</p>
           </CardContent>
         </Card>
 
@@ -95,10 +124,15 @@ export function TrustEvolution() {
             <CardTitle className="text-sm">Trend Direction</CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant="destructive" className="text-sm">
-              Declining
+            <Badge 
+              variant={change < 0 ? "destructive" : "default"} 
+              className={`text-sm ${change >= 0 ? "bg-[#2E7D32] hover:bg-[#2E7D32]/90" : ""}`}
+            >
+              {change < 0 ? "Declining" : "Stable"}
             </Badge>
-            <p className="text-xs text-gray-500 mt-2">Requires attention</p>
+            <p className="text-xs text-gray-500 mt-2">
+              {change < 0 ? "Requires attention" : "Normal behavior"}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -173,36 +207,40 @@ export function TrustEvolution() {
           <AlertCircle className="w-5 h-5" />
           Annotated Behavioral Events
         </h2>
-        <div className="space-y-3">
-          {eventPoints.map((point, index) => (
-            <div
-              key={index}
-              className="flex items-start gap-3 p-3 border-l-4 border-[#FF6600] bg-orange-50 rounded"
-            >
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-[#FF6600] rounded-lg flex items-center justify-center text-white font-bold">
-                  {point.score}
+        {eventPoints.length > 0 ? (
+          <div className="space-y-3">
+            {eventPoints.map((point, index) => (
+              <div
+                key={index}
+                className="flex items-start gap-3 p-3 border-l-4 border-[#FF6600] bg-orange-50 rounded"
+              >
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-[#FF6600] rounded-lg flex items-center justify-center text-white font-bold">
+                    {point.score}
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-semibold text-sm">{point.event}</h3>
+                    <span className="text-xs text-gray-500">
+                      {point.fullDate.toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Trust score dropped to {point.score}. This event triggered enhanced monitoring
+                    and contributed to the overall declining trend.
+                  </p>
                 </div>
               </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="font-semibold text-sm">{point.event}</h3>
-                  <span className="text-xs text-gray-500">
-                    {point.fullDate.toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-600">
-                  Trust score dropped to {point.score}. This event triggered enhanced monitoring
-                  and contributed to the overall declining trend.
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 italic">No significant behavioral anomalies detected in the last 90 days.</p>
+        )}
       </div>
     </div>
   );

@@ -4,8 +4,9 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { motion, AnimatePresence } from "motion/react";
 
+
 // ── CONFIG ───────────────────────────────────────────────────────────────────────
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY ?? "-";
+const GEMINI_API_KEY = "-";
 const GEMINI_MODEL = "gemini-2.5-flash-lite";
 
 // ── System prompt ────────────────────────────────────────────────────────────────

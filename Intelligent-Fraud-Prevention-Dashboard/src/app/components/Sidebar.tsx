@@ -13,6 +13,7 @@ import {
   Layers,
   MessageSquare,
   ShieldAlert,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "./ui/utils";
 import { Badge } from "./ui/badge";
@@ -52,12 +53,13 @@ export function Sidebar({ reviewQueueCount = 0, activeAlertsCount = 0, escalatio
       badge: escalationCount > 0 ? escalationCount : null,
       group: "main",
     },
-    // ── NEW PAGES ──────────────────────────────────────────────
+    // ── ADVANCED SIGNALS ───────────────────────────────────────
     { to: "/velocity-cliff", icon: Activity, label: "Velocity Cliff", badge: null, group: "advanced" },
     { to: "/behavioral-entropy", icon: Brain, label: "Behavioral Entropy", badge: null, group: "advanced" },
     { to: "/digital-twin", icon: Cpu, label: "Digital Twin", badge: null, group: "advanced" },
     { to: "/actor-critic", icon: Layers, label: "Actor-Critic Engine", badge: null, group: "advanced" },
     { to: "/fraud-chat", icon: MessageSquare, label: "FraudSense AI", badge: null, group: "advanced" },
+    { to: "/credit-card-intelligence", icon: CreditCard, label: "Card Intelligence", badge: null, group: "advanced" },
   ];
 
   const mainItems = navItems.filter((n) => n.group === "main");
