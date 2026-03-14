@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 
 // ── CONFIG ───────────────────────────────────────────────────────────────────────
-const GEMINI_API_KEY = "-";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const GEMINI_MODEL = "gemini-2.5-flash-lite";
 
 // ── System prompt ────────────────────────────────────────────────────────────────
@@ -196,7 +196,7 @@ export function FraudChatPage() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
-  const hasApiKey = GEMINI_API_KEY !== "-";
+  const hasApiKey = GEMINI_API_KEY !== "AIzaSyBTJc-NfLAFkRZrAwjJ38dU7WbQpOnSjgo";
 
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)] max-w-4xl mx-auto p-4 gap-4">
