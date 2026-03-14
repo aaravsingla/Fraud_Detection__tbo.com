@@ -28,17 +28,9 @@ export function Sidebar({ reviewQueueCount = 0, activeAlertsCount = 0, escalatio
   const location = useLocation();
 
   const navItems = [
+    // ── NAMELESS ZONE (MAIN) ──────────────────────────────────
     { to: "/", icon: LayoutDashboard, label: "Dashboard", badge: null, group: "main" },
-    { to: "/network", icon: Network, label: "Network Graph", badge: null, group: "main" },
     { to: "/trust-evolution", icon: TrendingUp, label: "Trust Evolution", badge: null, group: "main" },
-    { to: "/credit-simulator", icon: Users, label: "Credit & Exit Risk", badge: null, group: "main" },
-    {
-      to: "/learning-loop",
-      icon: GraduationCap,
-      label: "Learning Loop",
-      badge: reviewQueueCount > 0 ? reviewQueueCount : null,
-      group: "main",
-    },
     {
       to: "/alerts",
       icon: AlertCircle,
@@ -53,17 +45,30 @@ export function Sidebar({ reviewQueueCount = 0, activeAlertsCount = 0, escalatio
       badge: escalationCount > 0 ? escalationCount : null,
       group: "main",
     },
+
     // ── ADVANCED SIGNALS ───────────────────────────────────────
+    { to: "/network", icon: Network, label: "Network Graph", badge: null, group: "advanced" },
     { to: "/velocity-cliff", icon: Activity, label: "Velocity Cliff", badge: null, group: "advanced" },
     { to: "/behavioral-entropy", icon: Brain, label: "Behavioral Entropy", badge: null, group: "advanced" },
-    { to: "/digital-twin", icon: Cpu, label: "Digital Twin", badge: null, group: "advanced" },
-    { to: "/actor-critic", icon: Layers, label: "Actor-Critic Engine", badge: null, group: "advanced" },
-    { to: "/fraud-chat", icon: MessageSquare, label: "FraudSense AI", badge: null, group: "advanced" },
     { to: "/credit-card-intelligence", icon: CreditCard, label: "Card Intelligence", badge: null, group: "advanced" },
+
+    // ── DECISION ENGINE + LEARNING ─────────────────────────────
+    { to: "/credit-simulator", icon: Users, label: "Credit & Risk Simulator", badge: null, group: "decision" },
+    {
+      to: "/learning-loop",
+      icon: GraduationCap,
+      label: "Learning Loop",
+      badge: reviewQueueCount > 0 ? reviewQueueCount : null,
+      group: "decision",
+    },
+    { to: "/digital-twin", icon: Cpu, label: "Digital Twin", badge: null, group: "decision" },
+    { to: "/actor-critic", icon: Layers, label: "Actor-Critic Engine", badge: null, group: "decision" },
+    { to: "/fraud-chat", icon: MessageSquare, label: "FraudSense AI", badge: null, group: "decision" },
   ];
 
   const mainItems = navItems.filter((n) => n.group === "main");
   const advancedItems = navItems.filter((n) => n.group === "advanced");
+  const decisionItems = navItems.filter((n) => n.group === "decision");
 
   const renderItem = (item: (typeof navItems)[0]) => {
     const isActive = location.pathname === item.to;
@@ -100,14 +105,27 @@ export function Sidebar({ reviewQueueCount = 0, activeAlertsCount = 0, escalatio
   return (
     <aside className="w-60 border-r bg-white h-[calc(100vh-5rem)] sticky top-20 flex flex-col">
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {/* Main Nameless section */}
         {mainItems.map(renderItem)}
 
-        {/* Advanced section */}
-        <div className="pt-3">
-          <div className="px-3 pb-1">
+        {/* Advanced Signals section */}
+        <div className="pt-4">
+          <div className="px-3 pb-2">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Advanced Signals</span>
           </div>
-          {advancedItems.map(renderItem)}
+          <div className="space-y-1">
+            {advancedItems.map(renderItem)}
+          </div>
+        </div>
+
+        {/* Decision Engine + Learning section */}
+        <div className="pt-4">
+          <div className="px-3 pb-2">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Decision Engine + Learning</span>
+          </div>
+          <div className="space-y-1">
+            {decisionItems.map(renderItem)}
+          </div>
         </div>
       </nav>
 
