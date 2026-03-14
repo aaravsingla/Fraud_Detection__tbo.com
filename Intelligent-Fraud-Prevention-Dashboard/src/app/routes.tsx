@@ -14,6 +14,7 @@ import { FraudChatPage } from "./pages/FraudChatPage";
 import { EscalationQueue } from "./pages/EscalationQueue";
 import { NotFound } from "./pages/NotFound";
 import CreditCardIntelligencePage from "./pages/CreditCardIntelligencePage";
+import RefundIntelligencePage from "./pages/RefundIntelligencePage"; // <--- NEW IMPORT
 
 export const router = createBrowserRouter([
   {
@@ -26,16 +27,16 @@ export const router = createBrowserRouter([
       { path: "credit-simulator", Component: CreditSimulator },
       { path: "learning-loop", Component: LearningLoop },
       { path: "alerts", Component: AlertsView },
-      // ── NEW ROUTES ─────────────────────────────────────────────
+      // ── ADVANCED SIGNALS ─────────────────────────────────────────────
       { path: "velocity-cliff", Component: VelocityCliffPage },
       { path: "behavioral-entropy", Component: BehavioralEntropyPage },
-      // ── DIGITAL TWIN ───────────────────────────────────────────
+      { path: "credit-card-intelligence", Component: CreditCardIntelligencePage },
+      { path: "refund-intelligence", Component: RefundIntelligencePage }, // <--- NEW ROUTE
+      // ── DIGITAL TWIN & ENGINE ────────────────────────────────────────
       { path: "digital-twin", Component: DigitalTwinPage },
       { path: "actor-critic", Component: ActorCriticPage },
       { path: "fraud-chat", Component: FraudChatPage },
       { path: "escalations", Component: EscalationQueue },
-      // ── CREDIT CARD INTELLIGENCE ────────────────────────────────
-      { path: "credit-card-intelligence", Component: CreditCardIntelligencePage },
       {
         path: "settings",
         element: (

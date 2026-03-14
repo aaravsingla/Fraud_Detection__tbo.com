@@ -2,8 +2,9 @@ import { useState } from "react";
 import { TemporalNetworkGraph } from "../components/TemporalNetworkGraph";
 import { RingEvidencePanel } from "../components/RingEvidencePanel";
 import { NetworkGraph } from "../components/NetworkGraph";
+import { ChargebackContagionGraph } from "../components/ChargebackContagionGraph"; // <--- NEW IMPORT
 import { mockNetworkNodes } from "../data/mockData";
-import { AlertTriangle, Users, Wifi, Clock, LayoutGrid } from "lucide-react";
+import { AlertTriangle, Users, Wifi, Clock, LayoutGrid, Biohazard } from "lucide-react"; // <--- ADDED Biohazard
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Badge } from "../components/ui/badge";
@@ -19,7 +20,7 @@ export function NetworkView() {
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-[#003366]">Network Analysis</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Fraud ring detection, connection mapping &amp; temporal replay
+          Fraud ring detection, connection mapping, temporal replay & contagion
         </p>
       </div>
 
@@ -68,12 +69,12 @@ export function NetworkView() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Clock className="w-4 h-4" /> Ring Assembled Over
+              <Biohazard className="w-4 h-4 text-[#FF6600]" /> Contagion Risk
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#FF6600]">6 wks</div>
-            <p className="text-xs text-gray-500 mt-1">Nov 13 → Dec 18</p>
+            <div className="text-2xl font-bold text-[#FF6600]">9 Agencies</div>
+            <p className="text-xs text-gray-500 mt-1">Within 2 hops of default</p>
           </CardContent>
         </Card>
       </div>
@@ -84,11 +85,16 @@ export function NetworkView() {
           <TabsTrigger value="temporal" className="gap-2 text-sm">
             <Clock className="w-4 h-4" />
             Temporal Replay
-            <Badge className="bg-[#003366] text-white text-xs px-1.5 py-0 ml-1 border-0">NEW</Badge>
           </TabsTrigger>
           <TabsTrigger value="live" className="gap-2 text-sm">
             <LayoutGrid className="w-4 h-4" />
             Live Network
+          </TabsTrigger>
+          {/* ── NEW CONTAGION TAB ── */}
+          <TabsTrigger value="contagion" className="gap-2 text-sm">
+            <Biohazard className="w-4 h-4" />
+            Contagion Propagation
+            <Badge className="bg-[#C62828] text-white text-xs px-1.5 py-0 ml-1 border-0">CRITICAL</Badge>
           </TabsTrigger>
         </TabsList>
 
@@ -179,6 +185,12 @@ export function NetworkView() {
             </div>
           </div>
         </TabsContent>
+
+        {/* ── NEW CONTAGION TAB ── */}
+        <TabsContent value="contagion">
+           <ChargebackContagionGraph />
+        </TabsContent>
+
       </Tabs>
     </div>
   );

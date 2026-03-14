@@ -579,3 +579,21 @@ export const mockVerifications: StepUpVerification[] = [
     maxAttempts: 3,
   },
 ];
+
+// --- ADD THIS TO THE BOTTOM OF src/app/data/mockData.ts ---
+
+export const mockContagionData = {
+  groundZero: { id: "AG-CB-01", name: "DiscountFares Pro", exposure: 1250000, risk: 100 },
+  hop1: [
+    { id: "AG-CB-02", name: "CheapTickets LLC", exposure: 420000, risk: 85, source: "AG-CB-01" },
+    { id: "AG-CB-03", name: "Wanderlust Travels", exposure: 4500000, risk: 78, source: "AG-CB-01" },
+    { id: "AG-CB-04", name: "FlyRight Booking", exposure: 330000, risk: 82, source: "AG-CB-01" }
+  ],
+  hop2: [
+    { id: "AG-CB-05", name: "SkyHigh Agencies", exposure: 120000, risk: 45, source: "AG-CB-02" },
+    { id: "AG-CB-06", name: "Global Ventures", exposure: 890000, risk: 38, source: "AG-CB-02" },
+    { id: "AG-CB-07", name: "QuickBook Express", exposure: 3200000, risk: 55, source: "AG-CB-03" },
+    { id: "AG-CB-08", name: "TravelSmart Co", exposure: 2800000, risk: 62, source: "AG-CB-03" },
+    { id: "AG-CB-09", name: "Paradise Tours", exposure: 75000, risk: 20, source: "AG-CB-04" }
+  ]
+};

@@ -14,6 +14,7 @@ import {
   MessageSquare,
   ShieldAlert,
   CreditCard,
+  RefreshCw // <--- ADDED ICON
 } from "lucide-react";
 import { cn } from "./ui/utils";
 import { Badge } from "./ui/badge";
@@ -51,6 +52,8 @@ export function Sidebar({ reviewQueueCount = 0, activeAlertsCount = 0, escalatio
     { to: "/velocity-cliff", icon: Activity, label: "Velocity Cliff", badge: null, group: "advanced" },
     { to: "/behavioral-entropy", icon: Brain, label: "Behavioral Entropy", badge: null, group: "advanced" },
     { to: "/credit-card-intelligence", icon: CreditCard, label: "Card Intelligence", badge: null, group: "advanced" },
+    // NEW ADDITION
+    { to: "/refund-intelligence", icon: RefreshCw, label: "Refund Intelligence", badge: null, group: "advanced" },
 
     // ── DECISION ENGINE + LEARNING ─────────────────────────────
     { to: "/credit-simulator", icon: Users, label: "Credit & Risk Simulator", badge: null, group: "decision" },
