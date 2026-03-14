@@ -8,13 +8,14 @@ import { StepUpVerificationModal } from "../components/StepUpVerificationModal";
 import { mockBookings } from "../data/mockData";
 import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Badge } from "../components/ui/badge";
-import { Filter, RefreshCw, ShieldCheck } from "lucide-react";
+import { Filter, RefreshCw, ShieldCheck, Download } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { motion } from "motion/react";
 import type { RiskFactor } from "../types";
 import { scoreBookingRisk, createEscalation, type RiskDecision } from "../services/riskApi";
 import { signalsFromBooking } from "../services/signalAdapters";
 import { toast } from "sonner";
+import { generateAgencyRiskReport } from "../services/pdfGenerator";
 
 // Derive dual-state values from a booking's mock data
 function getDualStateFromBooking(bookingId: string) {
@@ -124,6 +125,13 @@ export function Dashboard() {
     setVerifyModalOpen(false);
   }, [selectedBookingId]);
 
+  const handleGeneratePDF = useCallback(() => {
+    if (selectedBooking) {
+      generateAgencyRiskReport(selectedBooking, dualStateProfile);
+      toast.success("Risk report generated successfully");
+    }
+  }, [selectedBooking, dualStateProfile]);
+
   const filteredBookings = mockBookings.filter((booking) => {
     if (filterStatus === "all") return true;
     return booking.status === filterStatus;
@@ -176,7 +184,27 @@ export function Dashboard() {
         <div className="col-span-8 space-y-5">
           {selectedBooking ? (
             <>
-              {/* ── Dual-State Matrix (NEW) ── */}
+              {/* --- NEW: Details View Header with PDF Button --- */}
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }} 
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-between bg-white p-4 rounded-lg border shadow-sm"
+              >
+                <div>
+                  <h2 className="text-xl font-bold text-[#003366]">{selectedBooking.agencyName}</h2>
+                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                    <span>ID: {selectedBooking.id}</span>
+                    <span>•</span>
+                    <span>Amount: ${selectedBooking.amount}</span>
+                  </div>
+                </div>
+                <Button onClick={handleGeneratePDF} className="bg-[#003366] hover:bg-[#002244] text-white">
+                  <Download className="w-4 h-4 mr-2" />
+                  Generate Report
+                </Button>
+              </motion.div>
+
+              {/* ── Dual-State Matrix ── */}
               {dualStateProfile && (
                 <DualStateMatrix
                   creditHealth={dualStateProfile.creditHealth}
